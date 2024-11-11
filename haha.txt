@@ -1,0 +1,256 @@
+Certainly! I'll provide an explanation of the Object-Oriented Programming (OOP) design principles used in this Rental Property Management System, along with a more detailed UML class diagram that matches the Java code.
+
+OOP Design Principles Applied:
+
+1. Encapsulation:
+   - All classes use private fields with public getters and setters.
+   - This hides the internal state of objects and provides controlled access.
+
+2. Inheritance:
+   - Person is the base class for Tenant and Host.
+   - Property is the base class for ResidentialProperty and CommercialProperty.
+   - This allows for code reuse and establishes an "is-a" relationship.
+
+3. Polymorphism:
+   - The use of interfaces (TenantManager, HostManager, PropertyManager, RentalManager) allows for different implementations.
+   - Properties can be treated polymorphically (e.g., a list of Property objects can contain both ResidentialProperty and CommercialProperty instances).
+
+4. Abstraction:
+   - The use of interfaces abstracts the implementation details from the client code.
+   - Abstract concepts like Person and Property are used to represent real-world entities.
+
+5. Single Responsibility Principle:
+   - Each class has a single, well-defined responsibility (e.g., Tenant manages tenant-specific data, RentalAgreement manages agreement details).
+
+6. Open/Closed Principle:
+   - The system is open for extension (e.g., new property types can be added by extending Property) but closed for modification.
+
+7. Interface Segregation Principle:
+   - Separate interfaces for different manager types (TenantManager, HostManager, etc.) instead of one large interface.
+
+8. Dependency Inversion Principle:
+   - High-level modules (like ConsoleUI) depend on abstractions (interfaces) rather than concrete implementations.
+
+Here's a more detailed UML class diagram that matches the Java code:
+
+```
++------------------------+        +------------------------+
+|         Person         |        |       Property         |
++------------------------+        +------------------------+
+| - id: String           |        | - id: String           |
+| - fullName: String     |        | - address: String      |
+| - dateOfBirth: Date    |        | - price: double        |
+| - contactInformation:  |        | - status: Status       |
+|   String               |        | - owner: String        |
++------------------------+        | - hosts: List<Host>    |
+| + getId(): String      |        +------------------------+
+| + getFullName(): String|        | + getId(): String      |
+| + getDateOfBirth(): Date|       | + getAddress(): String |
+| + getContactInformation|        | + getPrice(): double   |
+|   (): String           |        | + getStatus(): Status  |
+| + setFullName(String)  |        | + getOwner(): String   |
+| + setDateOfBirth(Date) |        | + getHosts(): List<Host>
+| + setContactInformation|        | + setAddress(String)   |
+|   (String)             |        | + setPrice(double)     |
++------------------------+        | + setStatus(Status)    |
+         ^                        | + addHost(Host)        |
+         |                        +------------------------+
+         |                                    ^
++--------+----------+                         |
+|      Tenant       |     +-------------------+------------------+
++-------------------+     |    ResidentialProperty               |
+| - rentalAgreements|     +--------------------------------------+
+|   : List<Rental   |     | - numberOfBedrooms: int              |
+|     Agreement>    |     | - hasGarden: boolean                 |
+| - paymentTrans-   |     | - isPetFriendly: boolean             |
+|   actions: List   |     +--------------------------------------+
+|   <Payment>       |     | + getNumberOfBedrooms(): int         |
++-------------------+     | + isHasGarden(): boolean             |
+| + addRentalAgree- |     | + isPetFriendly(): boolean           |
+|   ment(Rental     |     | + setNumberOfBedrooms(int)           |
+|   Agreement)      |     | + setHasGarden(boolean)              |
+| + addPaymentTrans-|     | + setPetFriendly(boolean)            |
+|   action(Payment) |     +--------------------------------------+
++-------------------+
+                          +--------------------------------------+
++-------------------+     |    CommercialProperty                |
+|       Host        |     +--------------------------------------+
++-------------------+     | - businessType: String               |
+| - managedProperties     | - parkingSpaces: int                 |
+|   : List<Property>|     | - squareFootage: double              |
+| - cooperating-    |     +--------------------------------------+
+|   Owners: List    |     | + getBusinessType(): String          |
+|   <String>        |     | + getParkingSpaces(): int            |
+| - rentalAgreements|     | + getSquareFootage(): double         |
+|   : List<Rental   |     | + setBusinessType(String)            |
+|     Agreement>    |     | + setParkingSpaces(int)              |
++-------------------+     | + setSquareFootage(double)           |
+| + addManagedProp- |     +--------------------------------------+
+|   erty(Property)  |
+| + addCooperating- |     +--------------------------------------+
+|   Owner(String)   |     |        RentalAgreement               |
+| + addRentalAgree- |     +--------------------------------------+
+|   ment(Rental     |     | - id: String                         |
+|   Agreement)      |     | - mainTenant: Tenant                 |
++-------------------+     | - subTenants: List<Tenant>           |
+                          | - property: Property                 |
++-------------------+     | - period: Period                     |
+|     Payment       |     | - contractDate: Date                 |
++-------------------+     | - rentingFee: double                 |
+| - id: String      |     | - status: Status                     |
+| - amount: double  |     +--------------------------------------+
+| - paymentDate:    |     | + getId(): String                    |
+|   Date            |     | + getMainTenant(): Tenant            |
+| - paymentMethod:  |     | + getProperty(): Property            |
+|   String          |     | + getPeriod(): Period                |
+| - tenant: Tenant  |     | + getContractDate(): Date            |
+| - rentalAgreement:|     | + getRentingFee(): double            |
+|   RentalAgreement |     | + getStatus(): Status                |
++-------------------+     | + addSubTenant(Tenant)               |
+| + getId(): String |     | + setStatus(Status)                  |
+| + getAmount():    |     +--------------------------------------+
+|   double          |
+| + getPaymentDate():|    +--------------------------------------+
+|   Date            |     |           Manager Interfaces         |
+| + getPaymentMethod|     +--------------------------------------+
+|   (): String      |     | <<interface>>                        |
+| + getTenant():    |     | TenantManager                        |
+|   Tenant          |     +--------------------------------------+
+| + getRentalAgree- |     | + addTenant(Tenant): boolean         |
+|   ment(): Rental  |     | + updateTenant(Tenant): boolean      |
+|   Agreement       |     | + deleteTenant(String): boolean      |
++-------------------+     | + getTenant(String): Tenant          |
+                          | + getAllTenants(): List<Tenant>      |
+                          | + saveToFile()                       |
+                          | + loadFromFile()                     |
+                          +--------------------------------------+
+                          | <<interface>>                        |
+                          | HostManager                          |
+                          +--------------------------------------+
+                          | (Similar methods as TenantManager)   |
+                          +--------------------------------------+
+                          | <<interface>>                        |
+                          | PropertyManager                      |
+                          +--------------------------------------+
+                          | (Similar methods as TenantManager)   |
+                          +--------------------------------------+
+                          | <<interface>>                        |
+                          | RentalManager                        |
+                          +--------------------------------------+
+                          | + addRentalAgreement(RentalAgreement)|
+                          |   : boolean                          |
+                          | + updateRentalAgreement(Rental       |
+                          |   Agreement): boolean                |
+                          | + deleteRentalAgreement(String):     |
+                          |   boolean                            |
+                          | + getRentalAgreement(String):        |
+                          |   RentalAgreement                    |
+                          | + getAllRentalAgreements():          |
+                          |   List<RentalAgreement>              |
+                          | + getSortedRentalAgreements(String): |
+                          |   List<RentalAgreement>              |
+                          | + saveToFile()                       |
+                          | + loadFromFile()                     |
+                          +--------------------------------------+
+```
+
+This UML class diagram provides a more detailed view of the classes, their attributes, and methods, matching the Java code structure. It shows the relationships between classes, including inheritance (with arrows pointing to the parent class) and associations (with lines connecting related classes).
+
+The diagram illustrates how the system is designed using OOP principles, with clear separation of concerns, appropriate use of inheritance and interfaces, and encapsulation of data within each class.
+
+
+
+
+
+
+
+
+Certainly! I'll provide you with a more visually structured representation of the UML class diagram. This format should be easier to read and visualize. You can use this as a guide to create a graphical version using a UML tool.
+
+```
++-------------------+    +-------------------+    +-------------------+
+|      Person       |    |     Property      |    |  RentalAgreement  |
++-------------------+    +-------------------+    +-------------------+
+| - id: String      |    | - id: String      |    | - id: String      |
+| - fullName: String|    | - address: String |    | - period: Period  |
+| - dateOfBirth: Date    | - price: double   |    | - contractDate:   |
+| - contactInfo:    |    | - status: Status  |    |   Date            |
+|   String          |    | - owner: String   |    | - rentingFee:     |
++-------------------+    | - hosts: List<Host>    |   double          |
+| + getId()         |    +-------------------+    | - status: Status  |
+| + getFullName()   |    | + getId()         |    +-------------------+
+| + getDateOfBirth()|    | + getAddress()    |    | + getId()         |
+| + getContactInfo()|    | + getPrice()      |    | + getMainTenant() |
+| + setFullName()   |    | + getStatus()     |    | + getProperty()   |
+| + setDateOfBirth()|    | + getOwner()      |    | + getPeriod()     |
+| + setContactInfo()|    | + getHosts()      |    | + getContractDate()|
++-------------------+    | + setAddress()    |    | + getRentingFee() |
+         ^               | + setPrice()      |    | + getStatus()     |
+         |               | + setStatus()     |    | + addSubTenant()  |
+         |               | + addHost()       |    | + setStatus()     |
++--------+--------+      +-------------------+    +-------------------+
+|                 |               ^                         ^
+|                 |               |                         |
++--------+  +-----+-----+  +------+------+  +---------------+
+| Tenant |  |   Host    |  | Residential |  |   Commercial  |
++--------+  +-----------+  |  Property   |  |   Property    |
+| - rental |  | - managed  +-------------+  +---------------+
+|   Agree- |  |  Properties| - bedrooms  |  | - businessType|
+|   ments  |  | - coopera- | - hasGarden |  | - parkingSpaces
+| - payment|  |  tingOwners| - petFriendly  | - squareFootage
+|   Trans- |  | - rental   +-------------+  +---------------+
+|   actions|  |  Agreements| + getBedrooms()| + getBusiness  |
++--------+  +-----------+  | + isHasGarden()|   Type()      |
+| + add   |  | + addMana|  | + isPetFriendly| + getParking  |
+|  Rental |  |  gedProp()|  | + setBedrooms()|   Spaces()   |
+|  Agree- |  | + addCoop|  | + setHasGarden()+ getSquare   |
+|  ment() |  |  Owner() |  | + setPet       |   Footage()  |
+| + add   |  | + addRen |  |   Friendly()   | + setBusiness |
+|  Payment|  |  talAgree|  +---------------+    Type()     |
+|  Trans()|  |  ment()  |                    + setParking  |
++--------+  +-----------+                      Spaces()    |
+                                             + setSquare   |
+                                               Footage()   |
+                                             +-------------+
+
++-------------------+    +-------------------+    +-------------------+
+|    Payment        |    |  TenantManager    |    |   HostManager     |
++-------------------+    +-------------------+    +-------------------+
+| - id: String      |    | + addTenant()     |    | + addHost()       |
+| - amount: double  |    | + updateTenant()  |    | + updateHost()    |
+| - paymentDate:    |    | + deleteTenant()  |    | + deleteHost()    |
+|   Date            |    | + getTenant()     |    | + getHost()       |
+| - paymentMethod:  |    | + getAllTenants() |    | + getAllHosts()   |
+|   String          |    | + saveToFile()    |    | + saveToFile()    |
+| - tenant: Tenant  |    | + loadFromFile()  |    | + loadFromFile()  |
+| - rentalAgreement:|    +-------------------+    +-------------------+
+|   RentalAgreement |
++-------------------+    +-------------------+    +-------------------+
+| + getId()         |    | PropertyManager   |    |  RentalManager    |
+| + getAmount()     |    +-------------------+    +-------------------+
+| + getPaymentDate()|    | + addProperty()   |    | + addRental       |
+| + getPaymentMethod|    | + updateProperty()|    |   Agreement()     |
+| + getTenant()     |    | + deleteProperty()|    | + updateRental    |
+| + getRentalAgree  |    | + getProperty()   |    |   Agreement()     |
+|   ment()          |    | + getAllProperties| + deleteRental    |
++-------------------+    | + saveToFile()    |    |   Agreement()     |
+                         | + loadFromFile()  |    | + getRental       |
+                         +-------------------+    |   Agreement()     |
+                                                  | + getAllRental    |
+                                                  |   Agreements()    |
+                                                  | + getSortedRental |
+                                                  |   Agreements()    |
+                                                  | + saveToFile()    |
+                                                  | + loadFromFile()  |
+                                                  +-------------------+
+```
+
+This representation:
+
+1. Groups related classes together (e.g., Person with Tenant and Host).
+2. Shows inheritance relationships with indentation and connecting lines.
+3. Separates the main classes (Person, Property, RentalAgreement) from their specialized subclasses.
+4. Includes the Payment class and all Manager interfaces.
+5. Uses a more compact format for methods to save space while still showing the main operations.
+
+This layout should make it easier to visualize the relationships between classes and the overall structure of the system. When creating a graphical version, you can use different colors or shapes to further distinguish between classes, interfaces, and inheritance relationships.
