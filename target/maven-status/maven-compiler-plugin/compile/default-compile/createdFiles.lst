@@ -1,0 +1,16 @@
+com\rentalsystem\ui\ConsoleUI.class
+com\rentalsystem\util\DateUtil.class
+com\rentalsystem\manager\RentalManager.class
+com\rentalsystem\model\CommercialProperty.class
+com\rentalsystem\model\Person.class
+com\rentalsystem\model\RentalAgreement.class
+com\rentalsystem\model\Property$Status.class
+com\rentalsystem\util\FileHandler.class
+com\rentalsystem\model\Payment.class
+com\rentalsystem\model\ResidentialProperty.class
+com\rentalsystem\model\Host.class
+com\rentalsystem\model\Tenant.class
+com\rentalsystem\model\Property.class
+com\rentalsystem\manager\RentalManagerImpl.class
+com\rentalsystem\model\RentalAgreement$Status.class
+com\rentalsystem\model\RentalAgreement$Period.class
