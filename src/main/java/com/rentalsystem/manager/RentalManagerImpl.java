@@ -1,41 +1,57 @@
- 
 package com.rentalsystem.manager;
 
 import com.rentalsystem.model.RentalAgreement;
+import com.rentalsystem.model.Payment;
 import com.rentalsystem.util.FileHandler;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class RentalManagerImpl implements RentalManager {
     private List<RentalAgreement> rentalAgreements;
+    private List<Payment> payments;
     private FileHandler fileHandler;
 
-    public RentalManagerImpl() {
-        this.rentalAgreements = new ArrayList<>();
-        this.fileHandler = new FileHandler();
-    }
+    public RentalManagerImpl(FileHandler fileHandler) {
+       this.fileHandler = fileHandler;
+       Map<String, List<?>> loadedData = fileHandler.loadAllData();
+       this.rentalAgreements = new ArrayList<>((List<RentalAgreement>) loadedData.get("rentalAgreements"));
+       System.out.println("RentalManagerImpl initialized with " + this.rentalAgreements.size() + " agreements.");
+   }
 
     @Override
-    public void addRentalAgreement(RentalAgreement agreement) {
-        rentalAgreements.add(agreement);
-    }
-
-    @Override
-    public void updateRentalAgreement(RentalAgreement agreement) {
-        for (int i = 0; i < rentalAgreements.size(); i++) {
-            if (rentalAgreements.get(i).getId().equals(agreement.getId())) {
-                rentalAgreements.set(i, agreement);
-                return;
-            }
+    public boolean addRentalAgreement(RentalAgreement agreement) {
+        if (getRentalAgreement(agreement.getId()) != null) {
+            System.out.println("Rental Agreement with ID " + agreement.getId() + " already exists.");
+            return false;
         }
+        rentalAgreements.add(agreement);
+        fileHandler.saveRentalAgreements(rentalAgreements);
+        return true;
     }
 
     @Override
-    public void deleteRentalAgreement(String agreementId) {
-        rentalAgreements.removeIf(agreement -> agreement.getId().equals(agreementId));
+    public boolean updateRentalAgreement(RentalAgreement agreement) {
+        RentalAgreement existingAgreement = getRentalAgreement(agreement.getId());
+        if (existingAgreement == null) {
+            System.out.println("Rental Agreement with ID " + agreement.getId() + " not found.");
+            return false;
+        }
+        int index = rentalAgreements.indexOf(existingAgreement);
+        rentalAgreements.set(index, agreement);
+        fileHandler.saveRentalAgreements(rentalAgreements);
+        return true;
+    }
+
+    @Override
+    public boolean deleteRentalAgreement(String agreementId) {
+        RentalAgreement agreement = getRentalAgreement(agreementId);
+        if (agreement == null) {
+            System.out.println("Rental Agreement with ID " + agreementId + " not found.");
+            return false;
+        }
+        rentalAgreements.remove(agreement);
+        fileHandler.saveRentalAgreements(rentalAgreements);
+        return true;
     }
 
     @Override
@@ -72,12 +88,41 @@ public class RentalManagerImpl implements RentalManager {
     }
 
     @Override
+    public boolean addPayment(Payment payment) {
+        RentalAgreement agreement = getRentalAgreement(payment.getRentalAgreementId());
+        if (agreement != null) {
+            agreement.addPayment(payment);
+            agreement.getMainTenant().addPayment(payment);
+            payments.add(payment);
+            fileHandler.savePayments(payments);
+            return true;
+        }
+        System.out.println("Rental Agreement with ID " + payment.getRentalAgreementId() + " not found.");
+        return false;
+    }
+
+    @Override
+    public List<Payment> getPaymentsForRentalAgreement(String rentalAgreementId) {
+        return payments.stream()
+                .filter(p -> p.getRentalAgreementId().equals(rentalAgreementId))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Payment> getAllPayments() {
+        return new ArrayList<>(payments);
+    }
+
+    @Override
     public void saveToFile() {
         fileHandler.saveRentalAgreements(rentalAgreements);
+        fileHandler.savePayments(payments);
     }
 
     @Override
     public void loadFromFile() {
-        rentalAgreements = fileHandler.loadRentalAgreements();
+        Map<String, List<?>> loadedData = fileHandler.loadAllData();
+        this.rentalAgreements = (List<RentalAgreement>) loadedData.get("rentalAgreements");
+        this.payments = (List<Payment>) loadedData.get("payments");
     }
 }
