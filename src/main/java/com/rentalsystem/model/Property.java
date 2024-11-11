@@ -1,4 +1,3 @@
- 
 package com.rentalsystem.model;
 
 import java.util.ArrayList;
@@ -15,6 +14,7 @@ public class Property {
     private Status status;
     private String owner;
     private List<Host> hosts;
+    private List<RentalAgreement> rentalAgreements; // Add this line
 
     public Property(String id, String address, double price, Status status, String owner) {
         this.id = id;
@@ -23,13 +23,25 @@ public class Property {
         this.status = status;
         this.owner = owner;
         this.hosts = new ArrayList<>();
+        this.rentalAgreements = new ArrayList<>(); // Initialize the list
     }
 
     public void addHost(Host host) {
         hosts.add(host);
     }
 
-    // Getters and setters
+    // Add this method
+    public void addRentalAgreement(RentalAgreement agreement) {
+        rentalAgreements.add(agreement);
+    }
+
+    // Add this method
+    public List<RentalAgreement> getRentalAgreements() {
+        return new ArrayList<>(rentalAgreements);
+    }
+
+    // Existing getters and setters...
+
     public String getId() {
         return id;
     }
@@ -83,6 +95,7 @@ public class Property {
                 ", status=" + status +
                 ", owner='" + owner + '\'' +
                 ", hosts=" + hosts.size() +
+                ", rentalAgreements=" + rentalAgreements.size() +
                 '}';
     }
 }

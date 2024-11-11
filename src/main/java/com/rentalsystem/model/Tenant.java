@@ -1,4 +1,3 @@
- 
 package com.rentalsystem.model;
 
 import java.util.ArrayList;
@@ -19,16 +18,16 @@ public class Tenant extends Person {
         rentalAgreements.add(agreement);
     }
 
-    public void addPaymentTransaction(Payment payment) {
+    public List<RentalAgreement> getRentalAgreements() {
+        return new ArrayList<>(rentalAgreements);
+    }
+
+    public void addPayment(Payment payment) {
         paymentTransactions.add(payment);
     }
 
-    public List<RentalAgreement> getRentalAgreements() {
-        return rentalAgreements;
-    }
-
     public List<Payment> getPaymentTransactions() {
-        return paymentTransactions;
+        return new ArrayList<>(paymentTransactions);
     }
 
     @Override

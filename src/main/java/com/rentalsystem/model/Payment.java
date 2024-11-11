@@ -1,4 +1,3 @@
- 
 package com.rentalsystem.model;
 
 import java.util.Date;
@@ -8,19 +7,16 @@ public class Payment {
     private double amount;
     private Date paymentDate;
     private String paymentMethod;
-    private Tenant tenant;
-    private RentalAgreement rentalAgreement;
+    private String rentalAgreementId;
 
-    public Payment(String id, double amount, Date paymentDate, String paymentMethod, Tenant tenant, RentalAgreement rentalAgreement) {
+    public Payment(String id, double amount, Date paymentDate, String paymentMethod, String rentalAgreementId) {
         this.id = id;
         this.amount = amount;
         this.paymentDate = paymentDate;
         this.paymentMethod = paymentMethod;
-        this.tenant = tenant;
-        this.rentalAgreement = rentalAgreement;
+        this.rentalAgreementId = rentalAgreementId;
     }
 
-    // Getters and setters
     public String getId() {
         return id;
     }
@@ -53,20 +49,12 @@ public class Payment {
         this.paymentMethod = paymentMethod;
     }
 
-    public Tenant getTenant() {
-        return tenant;
+    public String getRentalAgreementId() {
+        return rentalAgreementId;
     }
 
-    public void setTenant(Tenant tenant) {
-        this.tenant = tenant;
-    }
-
-    public RentalAgreement getRentalAgreement() {
-        return rentalAgreement;
-    }
-
-    public void setRentalAgreement(RentalAgreement rentalAgreement) {
-        this.rentalAgreement = rentalAgreement;
+    public void setRentalAgreementId(String rentalAgreementId) {
+        this.rentalAgreementId = rentalAgreementId;
     }
 
     @Override
@@ -76,8 +64,7 @@ public class Payment {
                 ", amount=" + amount +
                 ", paymentDate=" + paymentDate +
                 ", paymentMethod='" + paymentMethod + '\'' +
-                ", tenant=" + tenant.getFullName() +
-                ", rentalAgreement=" + rentalAgreement.getId() +
+                ", rentalAgreementId='" + rentalAgreementId + '\'' +
                 '}';
     }
 }
