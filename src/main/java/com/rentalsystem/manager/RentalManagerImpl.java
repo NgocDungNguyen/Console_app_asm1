@@ -1,7 +1,6 @@
 package com.rentalsystem.manager;
 
-import com.rentalsystem.model.RentalAgreement;
-import com.rentalsystem.model.Payment;
+import com.rentalsystem.model.*;
 import com.rentalsystem.util.FileHandler;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,14 +8,21 @@ import java.util.stream.Collectors;
 public class RentalManagerImpl implements RentalManager {
     private List<RentalAgreement> rentalAgreements;
     private List<Payment> payments;
-    private FileHandler fileHandler;
+    private FileHandler fileHandler;  // Add this line
 
     public RentalManagerImpl(FileHandler fileHandler) {
-       this.fileHandler = fileHandler;
-       Map<String, List<?>> loadedData = fileHandler.loadAllData();
-       this.rentalAgreements = new ArrayList<>((List<RentalAgreement>) loadedData.get("rentalAgreements"));
-       System.out.println("RentalManagerImpl initialized with " + this.rentalAgreements.size() + " agreements.");
-   }
+        this.fileHandler = fileHandler;  // Add this line
+        Map<String, List<?>> loadedData = fileHandler.loadAllData();
+        this.rentalAgreements = new ArrayList<>((List<RentalAgreement>) loadedData.get("rentalAgreements"));
+        this.payments = new ArrayList<>((List<Payment>) loadedData.get("payments"));
+        
+        // If payments is still null after loading, initialize it as an empty list
+        if (this.payments == null) {
+            this.payments = new ArrayList<>();
+        }
+        
+        System.out.println("RentalManagerImpl initialized with " + this.rentalAgreements.size() + " agreements and " + this.payments.size() + " payments.");
+    }
 
     @Override
     public boolean addRentalAgreement(RentalAgreement agreement) {
@@ -104,7 +110,7 @@ public class RentalManagerImpl implements RentalManager {
     @Override
     public List<Payment> getPaymentsForRentalAgreement(String rentalAgreementId) {
         return payments.stream()
-                .filter(p -> p.getRentalAgreementId().equals(rentalAgreementId))
+                .filter(payment -> payment.getRentalAgreementId().equals(rentalAgreementId))
                 .collect(Collectors.toList());
     }
 
@@ -113,7 +119,7 @@ public class RentalManagerImpl implements RentalManager {
         return new ArrayList<>(payments);
     }
 
-    @Override
+   @Override
     public void saveToFile() {
         fileHandler.saveRentalAgreements(rentalAgreements);
         fileHandler.savePayments(payments);
