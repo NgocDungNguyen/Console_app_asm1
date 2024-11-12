@@ -219,149 +219,153 @@ public class ConsoleUI {
     }
 
     private void addRentalAgreement() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                   ADD RENTAL AGREEMENT                    " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                   ADD RENTAL AGREEMENT                    " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Agreement ID");
-    String tenantId = promptForInput("Tenant ID");
-    String propertyId = promptForInput("Property ID");
-    String periodInput = promptForInput("Rental Period (DAILY, WEEKLY, FORTNIGHTLY, MONTHLY)");
-    String contractDateStr = promptForInput("Contract Date (YYYY-MM-DD)");
-    double rentingFee = Double.parseDouble(promptForInput("Renting Fee"));
-    String statusInput = promptForInput("Status (NEW, ACTIVE, COMPLETED)");
+        String id = promptForInput("Agreement ID");
+        String tenantId = promptForInput("Tenant ID");
+        String propertyId = promptForInput("Property ID");
+        String periodInput = promptForInput("Rental Period (DAILY, WEEKLY, FORTNIGHTLY, MONTHLY)");
+        String contractDateStr = promptForInput("Contract Date (YYYY-MM-DD)");
+        double rentingFee = Double.parseDouble(promptForInput("Renting Fee"));
+        String statusInput = promptForInput("Status (NEW, ACTIVE, COMPLETED)");
 
-    Tenant tenant = tenantManager.getTenant(tenantId);
-    Property property = propertyManager.getProperty(propertyId);
-    
-    if (tenant != null && property != null) {
-        RentalAgreement agreement = new RentalAgreement(
-            id, tenant, property,
-            RentalAgreement.Period.valueOf(periodInput.toUpperCase()),
-            DateUtil.parseDate(contractDateStr),
-            rentingFee,
-            RentalAgreement.Status.valueOf(statusInput.toUpperCase())
-        );
-        if (rentalManager.addRentalAgreement(agreement)) {
-            displaySuccess("Rental Agreement added successfully!");
-        } else {
-            displayError("Failed to add Rental Agreement. It may already exist.");
+        try {
+            Tenant tenant = tenantManager.getTenant(tenantId);
+            Property property = propertyManager.getProperty(propertyId);
+            
+            if (tenant != null && property != null) {
+                RentalAgreement agreement = new RentalAgreement(
+                    id, tenant, property,
+                    RentalAgreement.Period.valueOf(periodInput.toUpperCase()),
+                    DateUtil.parseDate(contractDateStr),
+                    rentingFee,
+                    RentalAgreement.Status.valueOf(statusInput.toUpperCase())
+                );
+                if (rentalManager.addRentalAgreement(agreement)) {
+                    displaySuccess("Rental Agreement added successfully!");
+                } else {
+                    displayError("Failed to add Rental Agreement. It may already exist.");
+                }
+            } else {
+                displayError("Invalid tenant or property ID.");
+            }
+        } catch (IllegalArgumentException e) {
+            displayError("Invalid input: " + e.getMessage());
         }
-    } else {
-        displayError("Invalid tenant or property ID.");
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
     }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
-
-private String promptForInput(String prompt) {
-    return reader.readLine(ANSI_BLUE + "║ " + ANSI_RESET + prompt + ": ");
-}
+    private String promptForInput(String prompt) {
+        return reader.readLine(ANSI_BLUE + "║ " + ANSI_RESET + prompt + ": ");
+    }
     
     private void updateRentalAgreement() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "               UPDATE RENTAL AGREEMENT                   " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "               UPDATE RENTAL AGREEMENT                   " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Enter agreement ID to update");
-    RentalAgreement agreement = rentalManager.getRentalAgreement(id);
-    if (agreement != null) {
-        String periodInput = promptForInput("Enter new rental period (or press enter to keep current: " + agreement.getPeriod() + ")");
-        if (!periodInput.isEmpty()) {
-            try {
-                agreement.setPeriod(RentalAgreement.Period.valueOf(periodInput.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                displayError("Invalid period. Keeping current value.");
+        String id = promptForInput("Enter agreement ID to update");
+        RentalAgreement agreement = rentalManager.getRentalAgreement(id);
+        if (agreement != null) {
+            String periodInput = promptForInput("Enter new rental period (or press enter to keep current: " + agreement.getPeriod() + ")");
+            if (!periodInput.isEmpty()) {
+                try {
+                    agreement.setPeriod(RentalAgreement.Period.valueOf(periodInput.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    displayError("Invalid period. Keeping current value.");
+                }
             }
-        }
 
-        String rentingFeeStr = promptForInput("Enter new renting fee (or press enter to keep current: $" + agreement.getRentingFee() + ")");
-        if (!rentingFeeStr.isEmpty()) {
-            try {
-                double newFee = Double.parseDouble(rentingFeeStr);
-                agreement.setRentingFee(newFee);
-            } catch (NumberFormatException e) {
-                displayError("Invalid renting fee. Keeping current value.");
+            String rentingFeeStr = promptForInput("Enter new renting fee (or press enter to keep current: $" + agreement.getRentingFee() + ")");
+            if (!rentingFeeStr.isEmpty()) {
+                try {
+                    double newFee = Double.parseDouble(rentingFeeStr);
+                    agreement.setRentingFee(newFee);
+                } catch (NumberFormatException e) {
+                    displayError("Invalid renting fee. Keeping current value.");
+                }
             }
-        }
 
-        String statusInput = promptForInput("Enter new status (or press enter to keep current: " + agreement.getStatus() + ")");
-        if (!statusInput.isEmpty()) {
-            try {
-                agreement.setStatus(RentalAgreement.Status.valueOf(statusInput.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                displayError("Invalid status. Keeping current value.");
+            String statusInput = promptForInput("Enter new status (or press enter to keep current: " + agreement.getStatus() + ")");
+            if (!statusInput.isEmpty()) {
+                try {
+                    agreement.setStatus(RentalAgreement.Status.valueOf(statusInput.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    displayError("Invalid status. Keeping current value.");
+                }
             }
-        }
 
-        if (rentalManager.updateRentalAgreement(agreement)) {
-            displaySuccess("Rental Agreement updated successfully!");
+            if (rentalManager.updateRentalAgreement(agreement)) {
+                displaySuccess("Rental Agreement updated successfully!");
+            } else {
+                displayError("Failed to update Rental Agreement.");
+            }
         } else {
-            displayError("Failed to update Rental Agreement.");
+            displayError("Rental Agreement not found.");
         }
-    } else {
-        displayError("Rental Agreement not found.");
-    }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
     
     private void deleteRentalAgreement() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "               DELETE RENTAL AGREEMENT                   " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "               DELETE RENTAL AGREEMENT                   " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Enter agreement ID to delete");
-    RentalAgreement agreement = rentalManager.getRentalAgreement(id);
-    if (agreement != null) {
-        System.out.println("Rental Agreement details:");
-        displayRentalAgreementDetails(agreement);
-        String confirm = promptForInput("Are you sure you want to delete this rental agreement? (yes/no)");
-        if (confirm.equalsIgnoreCase("yes")) {
-            if (rentalManager.deleteRentalAgreement(id)) {
-                displaySuccess("Rental Agreement deleted successfully!");
+        String id = promptForInput("Enter agreement ID to delete");
+        RentalAgreement agreement = rentalManager.getRentalAgreement(id);
+        if (agreement != null) {
+            System.out.println("Rental Agreement details:");
+            displayRentalAgreementDetails(agreement);
+            String confirm = promptForInput("Are you sure you want to delete this rental agreement? (yes/no)");
+            if (confirm.equalsIgnoreCase("yes")) {
+                if (rentalManager.deleteRentalAgreement(id)) {
+                    displaySuccess("Rental Agreement deleted successfully!");
+                } else {
+                    displayError("Failed to delete Rental Agreement. It may not exist.");
+                }
             } else {
-                displayError("Failed to delete Rental Agreement. It may not exist.");
+                System.out.println("Deletion cancelled.");
             }
         } else {
-            System.out.println("Deletion cancelled.");
+            displayError("Rental Agreement not found.");
         }
-    } else {
-        displayError("Rental Agreement not found.");
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
     }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
-
     private void viewRentalAgreement() {
-    String id = reader.readLine("Enter agreement ID to view: ");
-    RentalAgreement agreement = rentalManager.getRentalAgreement(id);
-    if (agreement != null) {
-        displayRentalAgreementDetails(agreement);
-    } else {
-        displayError("Rental Agreement not found.");
-     }
+        String id = reader.readLine("Enter agreement ID to view: ");
+        RentalAgreement agreement = rentalManager.getRentalAgreement(id);
+        if (agreement != null) {
+            displayRentalAgreementDetails(agreement);
+        } else {
+            displayError("Rental Agreement not found.");
+        }
     }
 
     private void displayRentalAgreementDetails(RentalAgreement agreement) {
-    String border = "╔══════════════════════════════════════════════════════════════╗";
-    String separator = "╠══════════════════════════════════════════════════════════════╣";
-    String footer = "╚══════════════════════════════════════════════════════════════╝";
+        String border = "╔══════════════════════════════════════════════════════════════╗";
+        String separator = "╠══════════════════════════════════════════════════════════════╣";
+        String footer = "╚══════════════════════════════════════════════════════════════╝";
 
-    System.out.println(ANSI_BLUE + border + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                  RENTAL AGREEMENT DETAILS                 " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + separator + ANSI_RESET);
-    
-    printDetailRow("Agreement ID", agreement.getId());
-    printDetailRow("Main Tenant", agreement.getMainTenant().getFullName());
-    printDetailRow("Property", agreement.getProperty().getAddress());
-    printDetailRow("Period", agreement.getPeriod().toString());
-    printDetailRow("Contract Date", DateUtil.formatDate(agreement.getContractDate()));
-    printDetailRow("Renting Fee", String.format("$%.2f", agreement.getRentingFee()));
-    printDetailRow("Status", agreement.getStatus().toString());
-    printDetailRow("Sub-tenants", String.valueOf(agreement.getSubTenants().size()));
+        System.out.println(ANSI_BLUE + border + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                  RENTAL AGREEMENT DETAILS                 " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + separator + ANSI_RESET);
+        
+        printDetailRow("Agreement ID", agreement.getId());
+        printDetailRow("Main Tenant", agreement.getMainTenant().getFullName());
+        printDetailRow("Property", agreement.getProperty().getAddress());
+        printDetailRow("Period", agreement.getPeriod().toString());
+        printDetailRow("Contract Date", DateUtil.formatDate(agreement.getContractDate()));
+        printDetailRow("Renting Fee", String.format("$%.2f", agreement.getRentingFee()));
+        printDetailRow("Status", agreement.getStatus().toString());
+        printDetailRow("Sub-tenants", String.valueOf(agreement.getSubTenants().size()));
 
-    System.out.println(ANSI_BLUE + footer + ANSI_RESET);
+        System.out.println(ANSI_BLUE + footer + ANSI_RESET);
     }
 
     private void printDetailRow(String label, String value) {
@@ -406,583 +410,603 @@ private String promptForInput(String prompt) {
     }
 
     private void viewTenant() {
-    String id = reader.readLine("Enter tenant ID to view: ");
-    Tenant tenant = tenantManager.getTenant(id);
-    if (tenant != null) {
-        displayTenantDetails(tenant);
-    } else {
-        displayError("Tenant not found.");
-    }
-}
-
-private void displayTenantDetails(Tenant tenant) {
-    String border = "╔══════════════════════════════════════════════════════════════╗";
-    String separator = "╠══════════════════════════════════════════════════════════════╣";
-    String footer = "╚══════════════════════════════════════════════════════════════╝";
-
-    System.out.println(ANSI_BLUE + border + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     TENANT DETAILS                       " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + separator + ANSI_RESET);
-    
-    printDetailRow("Tenant ID", tenant.getId());
-    printDetailRow("Full Name", tenant.getFullName());
-    printDetailRow("Date of Birth", DateUtil.formatDate(tenant.getDateOfBirth()));
-    printDetailRow("Contact Info", tenant.getContactInformation());
-    printDetailRow("Rental Agreements", String.valueOf(tenant.getRentalAgreements().size()));
-    printDetailRow("Payment Transactions", String.valueOf(tenant.getPaymentTransactions().size()));
-
-    System.out.println(ANSI_BLUE + footer + ANSI_RESET);
-}
-
-private void addTenant() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                       ADD TENANT                         " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
-
-    String id = promptForInput("Tenant ID");
-    String fullName = promptForInput("Full Name");
-    String dateOfBirth = promptForInput("Date of Birth (YYYY-MM-DD)");
-    String email = promptForInput("Email");
-    String phone = promptForInput("Phone Number");
-    
-    Tenant newTenant = new Tenant(id, fullName, DateUtil.parseDate(dateOfBirth), email + ", " + phone);
-    if (tenantManager.addTenant(newTenant)) {
-        displaySuccess("Tenant added successfully!");
-    } else {
-        displayError("Failed to add tenant. Tenant ID may already exist.");
-    }
-
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-} 
-    private void updateTenant() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    UPDATE TENANT                        " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
-
-    String id = promptForInput("Enter tenant ID to update");
-    Tenant tenant = tenantManager.getTenant(id);
-    if (tenant != null) {
-        String fullName = promptForInput("Enter new full name (or press enter to keep current: " + tenant.getFullName() + ")");
-        if (!fullName.isEmpty()) tenant.setFullName(fullName);
-        
-        String dobString = promptForInput("Enter new date of birth (YYYY-MM-DD) (or press enter to keep current: " + DateUtil.formatDate(tenant.getDateOfBirth()) + ")");
-        if (!dobString.isEmpty()) {
-            try {
-                Date newDob = DateUtil.parseDate(dobString);
-                tenant.setDateOfBirth(newDob);
-            } catch (IllegalArgumentException e) {
-                displayError("Invalid date format. Keeping current value.");
-            }
-        }
-        
-        String email = promptForInput("Enter new email (or press enter to keep current: " + tenant.getContactInformation().split(", ")[0] + ")");
-        String phone = promptForInput("Enter new phone number (or press enter to keep current: " + tenant.getContactInformation().split(", ")[1] + ")");
-        if (!email.isEmpty() || !phone.isEmpty()) {
-            String[] currentContact = tenant.getContactInformation().split(", ");
-            String newEmail = email.isEmpty() ? currentContact[0] : email;
-            String newPhone = phone.isEmpty() ? currentContact[1] : phone;
-            tenant.setContactInformation(newEmail + ", " + newPhone);
-        }
-        
-        if (tenantManager.updateTenant(tenant)) {
-            displaySuccess("Tenant updated successfully!");
+        String id = reader.readLine("Enter tenant ID to view: ");
+        Tenant tenant = tenantManager.getTenant(id);
+        if (tenant != null) {
+            displayTenantDetails(tenant);
         } else {
-            displayError("Failed to update tenant.");
+            displayError("Tenant not found.");
         }
-    } else {
-        displayError("Tenant not found.");
     }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
+    private void displayTenantDetails(Tenant tenant) {
+        String border = "╔══════════════════════════════════════════════════════════════╗";
+        String separator = "╠══════════════════════════════════════════════════════════════╣";
+        String footer = "╚══════════════════════════════════════════════════════════════╝";
+
+        System.out.println(ANSI_BLUE + border + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     TENANT DETAILS                       " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + separator + ANSI_RESET);
+        
+        printDetailRow("Tenant ID", tenant.getId());
+        printDetailRow("Full Name", tenant.getFullName());
+        printDetailRow("Date of Birth", DateUtil.formatDate(tenant.getDateOfBirth()));
+        printDetailRow("Contact Info", tenant.getContactInformation());
+        printDetailRow("Rental Agreements", String.valueOf(tenant.getRentalAgreements().size()));
+        printDetailRow("Payment Transactions", String.valueOf(tenant.getPaymentTransactions().size()));
+
+        System.out.println(ANSI_BLUE + footer + ANSI_RESET);
+    }
+
+    private void addTenant() {
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                       ADD TENANT                         " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+
+        String id = promptForInput("Tenant ID");
+        String fullName = promptForInput("Full Name");
+        String dateOfBirth = promptForInput("Date of Birth (YYYY-MM-DD)");
+        String email = promptForInput("Email");
+        String phone = promptForInput("Phone Number");
+        
+        try {
+            Tenant newTenant = new Tenant(id, fullName, DateUtil.parseDate(dateOfBirth), email + ", " + phone);
+            if (tenantManager.addTenant(newTenant)) {
+                displaySuccess("Tenant added successfully!");
+            } else {
+                displayError("Failed to add tenant. Tenant ID may already exist.");
+            }
+        } catch (IllegalArgumentException e) {
+            displayError("Invalid input: " + e.getMessage());
+        }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
+
+    private void updateTenant() {
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    UPDATE TENANT                        " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+
+        String id = promptForInput("Enter tenant ID to update");
+        Tenant tenant = tenantManager.getTenant(id);
+        if (tenant != null) {
+            String fullName = promptForInput("Enter new full name (or press enter to keep current: " + tenant.getFullName() + ")");
+            if (!fullName.isEmpty()) tenant.setFullName(fullName);
+            
+            String dobString = promptForInput("Enter new date of birth (YYYY-MM-DD) (or press enter to keep current: " + DateUtil.formatDate(tenant.getDateOfBirth()) + ")");
+            if (!dobString.isEmpty()) {
+                try {
+                    Date newDob = DateUtil.parseDate(dobString);
+                    tenant.setDateOfBirth(newDob);
+                } catch (IllegalArgumentException e) {
+                    displayError("Invalid date format. Keeping current value.");
+                }
+            }
+            
+            String email = promptForInput("Enter new email (or press enter to keep current: " + tenant.getContactInformation().split(", ")[0] + ")");
+            String phone = promptForInput("Enter new phone number (or press enter to keep current: " + tenant.getContactInformation().split(", ")[1] + ")");
+            if (!email.isEmpty() || !phone.isEmpty()) {
+                String[] currentContact = tenant.getContactInformation().split(", ");
+                String newEmail = email.isEmpty() ? currentContact[0] : email;
+                String newPhone = phone.isEmpty() ? currentContact[1] : phone;
+                tenant.setContactInformation(newEmail + ", " + newPhone);
+            }
+            
+            if (tenantManager.updateTenant(tenant)) {
+                displaySuccess("Tenant updated successfully!");
+            } else {
+                displayError("Failed to update tenant.");
+            }
+        } else {
+            displayError("Tenant not found.");
+        }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
     
     private void deleteTenant() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    DELETE TENANT                        " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    DELETE TENANT                        " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Enter tenant ID to delete");
-    Tenant tenant = tenantManager.getTenant(id);
-    if (tenant != null) {
-        System.out.println("Tenant details:");
-        displayTenantDetails(tenant);
-        String confirm = promptForInput("Are you sure you want to delete this tenant? (yes/no)");
-        if (confirm.equalsIgnoreCase("yes")) {
-            if (tenantManager.deleteTenant(id)) {
-                displaySuccess("Tenant deleted successfully!");
+        String id = promptForInput("Enter tenant ID to delete");
+        Tenant tenant = tenantManager.getTenant(id);
+        if (tenant != null) {
+            System.out.println("Tenant details:");
+            displayTenantDetails(tenant);
+            String confirm = promptForInput("Are you sure you want to delete this tenant? (yes/no)");
+            if (confirm.equalsIgnoreCase("yes")) {
+                if (tenantManager.deleteTenant(id)) {
+                    displaySuccess("Tenant deleted successfully!");
+                } else {
+                    displayError("Failed to delete tenant. Tenant may not exist.");
+                }
             } else {
-                displayError("Failed to delete tenant. Tenant may not exist.");
+                System.out.println("Deletion cancelled.");
             }
         } else {
-            System.out.println("Deletion cancelled.");
+            displayError("Tenant not found.");
         }
-    } else {
-        displayError("Tenant not found.");
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
     }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
-    
-   private void updateHost() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     UPDATE HOST                         " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+    private void updateHost() {
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     UPDATE HOST                         " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Enter host ID to update");
-    Host host = hostManager.getHost(id);
-    if (host != null) {
-        String fullName = promptForInput("Enter new full name (or press enter to keep current: " + host.getFullName() + ")");
-        if (!fullName.isEmpty()) host.setFullName(fullName);
-        
-        String dobString = promptForInput("Enter new date of birth (YYYY-MM-DD) (or press enter to keep current: " + DateUtil.formatDate(host.getDateOfBirth()) + ")");
-        if (!dobString.isEmpty()) {
-            try {
-                Date newDob = DateUtil.parseDate(dobString);
-                host.setDateOfBirth(newDob);
-            } catch (IllegalArgumentException e) {
-                displayError("Invalid date format. Keeping current value.");
+        String id = promptForInput("Enter host ID to update");
+        Host host = hostManager.getHost(id);
+        if (host != null) {
+            String fullName = promptForInput("Enter new full name (or press enter to keep current: " + host.getFullName() + ")");
+            if (!fullName.isEmpty()) host.setFullName(fullName);
+            
+            String dobString = promptForInput("Enter new date of birth (YYYY-MM-DD) (or press enter to keep current: " + DateUtil.formatDate(host.getDateOfBirth()) + ")");
+            if (!dobString.isEmpty()) {
+                try {
+                    Date newDob = DateUtil.parseDate(dobString);
+                    host.setDateOfBirth(newDob);
+                } catch (IllegalArgumentException e) {
+                    displayError("Invalid date format. Keeping current value.");
+                }
             }
-        }
-        
-        String email = promptForInput("Enter new email (or press enter to keep current: " + host.getContactInformation().split(", ")[0] + ")");
-        String phone = promptForInput("Enter new phone number (or press enter to keep current: " + host.getContactInformation().split(", ")[1] + ")");
-        if (!email.isEmpty() || !phone.isEmpty()) {
-            String[] currentContact = host.getContactInformation().split(", ");
-            String newEmail = email.isEmpty() ? currentContact[0] : email;
-            String newPhone = phone.isEmpty() ? currentContact[1] : phone;
-            host.setContactInformation(newEmail + ", " + newPhone);
-        }
-        
-        if (hostManager.updateHost(host)) {
-            displaySuccess("Host updated successfully!");
+            
+            String email = promptForInput("Enter new email (or press enter to keep current: " + host.getContactInformation().split(", ")[0] + ")");
+            String phone = promptForInput("Enter new phone number (or press enter to keep current: " + host.getContactInformation().split(", ")[1] + ")");
+            if (!email.isEmpty() || !phone.isEmpty()) {
+                String[] currentContact = host.getContactInformation().split(", ");
+                String newEmail = email.isEmpty() ? currentContact[0] : email;
+                String newPhone = phone.isEmpty() ? currentContact[1] : phone;
+                host.setContactInformation(newEmail + ", " + newPhone);
+            }
+            
+            if (hostManager.updateHost(host)) {
+                displaySuccess("Host updated successfully!");
+            } else {
+                displayError("Failed to update host.");
+            }
         } else {
-            displayError("Failed to update host.");
+            displayError("Host not found.");
         }
-    } else {
-        displayError("Host not found.");
-    }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
     
     private void deleteHost() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     DELETE HOST                         " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     DELETE HOST                         " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Enter host ID to delete");
-    Host host = hostManager.getHost(id);
-    if (host != null) {
-        System.out.println("Host details:");
-        displayHostDetails(host);
-        String confirm = promptForInput("Are you sure you want to delete this host? (yes/no)");
-        if (confirm.equalsIgnoreCase("yes")) {
-            if (hostManager.deleteHost(id)) {
-                displaySuccess("Host deleted successfully!");
+        String id = promptForInput("Enter host ID to delete");
+        Host host = hostManager.getHost(id);
+        if (host != null) {
+            System.out.println("Host details:");
+            displayHostDetails(host);
+            String confirm = promptForInput("Are you sure you want to delete this host? (yes/no)");
+            if (confirm.equalsIgnoreCase("yes")) {
+                if (hostManager.deleteHost(id)) {
+                    displaySuccess("Host deleted successfully!");
+                } else {
+                    displayError("Failed to delete host. Host may not exist.");
+                }
             } else {
-                displayError("Failed to delete host. Host may not exist.");
+                System.out.println("Deletion cancelled.");
             }
         } else {
-            System.out.println("Deletion cancelled.");
+            displayError("Host not found.");
         }
-    } else {
-        displayError("Host not found.");
-    }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
     
     private void viewHost() {
-    String id = reader.readLine("Enter host ID to view: ");
-    Host host = hostManager.getHost(id);
-    if (host != null) {
-        displayHostDetails(host);
-    } else {
-        displayError("Host not found.");
-    }
-}
-
-private void displayHostDetails(Host host) {
-    String border = "╔══════════════════════════════════════════════════════════════╗";
-    String separator = "╠══════════════════════════════════════════════════════════════╣";
-    String footer = "╚══════════════════════════════════════════════════════════════╝";
-
-    System.out.println(ANSI_BLUE + border + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                      HOST DETAILS                        " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + separator + ANSI_RESET);
-    
-    printDetailRow("Host ID", host.getId());
-    printDetailRow("Full Name", host.getFullName());
-    printDetailRow("Date of Birth", DateUtil.formatDate(host.getDateOfBirth()));
-    printDetailRow("Contact Info", host.getContactInformation());
-    printDetailRow("Managed Properties", String.valueOf(host.getManagedProperties().size()));
-    printDetailRow("Cooperating Owners", String.valueOf(host.getCooperatingOwners().size()));
-    printDetailRow("Rental Agreements", String.valueOf(host.getRentalAgreements().size()));
-
-    System.out.println(ANSI_BLUE + footer + ANSI_RESET);
-}
-
-private void addHost() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                        ADD HOST                          " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
-
-    String id = promptForInput("Host ID");
-    String fullName = promptForInput("Full Name");
-    String dateOfBirth = promptForInput("Date of Birth (YYYY-MM-DD)");
-    String email = promptForInput("Email");
-    String phone = promptForInput("Phone Number");
-    
-    Host newHost = new Host(id, fullName, DateUtil.parseDate(dateOfBirth), email + ", " + phone);
-    if (hostManager.addHost(newHost)) {
-        displaySuccess("Host added successfully!");
-    } else {
-        displayError("Failed to add host. Host ID may already exist.");
+        String id = reader.readLine("Enter host ID to view: ");
+        Host host = hostManager.getHost(id);
+        if (host != null) {
+            displayHostDetails(host);
+        } else {
+            displayError("Host not found.");
+        }
     }
 
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
+    private void displayHostDetails(Host host) {
+        String border = "╔══════════════════════════════════════════════════════════════╗";
+        String separator = "╠══════════════════════════════════════════════════════════════╣";
+        String footer = "╚══════════════════════════════════════════════════════════════╝";
+
+        System.out.println(ANSI_BLUE + border + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                      HOST DETAILS                        " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + separator + ANSI_RESET);
+        
+        printDetailRow("Host ID", host.getId());
+        printDetailRow("Full Name", host.getFullName());
+        printDetailRow("Date of Birth", DateUtil.formatDate(host.getDateOfBirth()));
+        printDetailRow("Contact Info", host.getContactInformation());
+        printDetailRow("Managed Properties", String.valueOf(host.getManagedProperties().size()));
+        printDetailRow("Cooperating Owners", String.valueOf(host.getCooperatingOwners().size()));
+        printDetailRow("Rental Agreements", String.valueOf(host.getRentalAgreements().size()));
+
+        System.out.println(ANSI_BLUE + footer + ANSI_RESET);
+    }
+
+    private void addHost() {
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                        ADD HOST                          " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+
+        String id = promptForInput("Host ID");
+        String fullName = promptForInput("Full Name");
+        String dateOfBirth = promptForInput("Date of Birth (YYYY-MM-DD)");
+        String email = promptForInput("Email");
+        String phone = promptForInput("Phone Number");
+        
+        try {
+            Host newHost = new Host(id, fullName, DateUtil.parseDate(dateOfBirth), email + ", " + phone);
+            if (hostManager.addHost(newHost)) {
+                displaySuccess("Host added successfully!");
+            } else {
+                displayError("Failed to add host. Host ID may already exist.");
+            }
+        } catch (IllegalArgumentException e) {
+            displayError("Invalid input: " + e.getMessage());
+        }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
 
     private void addPayment() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                      ADD PAYMENT                        " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                      ADD PAYMENT                        " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Payment ID");
-    String rentalAgreementId = promptForInput("Rental Agreement ID");
-    double amount = Double.parseDouble(promptForInput("Payment Amount"));
-    String dateStr = promptForInput("Payment Date (YYYY-MM-DD)");
-    String paymentMethod = promptForInput("Payment Method");
+        String id = promptForInput("Payment ID");
+        String rentalAgreementId = promptForInput("Rental Agreement ID");
+        double amount = Double.parseDouble(promptForInput("Payment Amount"));
+        String dateStr = promptForInput("Payment Date (YYYY-MM-DD)");
+        String paymentMethod = promptForInput("Payment Method");
 
-    Payment payment = new Payment(id, amount, DateUtil.parseDate(dateStr), paymentMethod, rentalAgreementId);
-    if (rentalManager.addPayment(payment)) {
-        displaySuccess("Payment added successfully!");
-    } else {
-        displayError("Failed to add payment. Rental agreement may not exist.");
+        try {
+            Payment payment = new Payment(id, amount, DateUtil.parseDate(dateStr), paymentMethod, rentalAgreementId);
+            if (rentalManager.addPayment(payment)) {
+                displaySuccess("Payment added successfully!");
+            } else {
+                displayError("Failed to add payment. Rental agreement may not exist.");
+            }
+        } catch (IllegalArgumentException e) {
+            displayError("Invalid input: " + e.getMessage());
+        }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
     }
-
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
 
     private void viewPaymentsForRentalAgreement() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "            VIEW PAYMENTS FOR RENTAL AGREEMENT           " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "            VIEW PAYMENTS FOR RENTAL AGREEMENT           " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String rentalAgreementId = promptForInput("Enter Rental Agreement ID");
-    List<Payment> payments = rentalManager.getPaymentsForRentalAgreement(rentalAgreementId);
-    if (payments.isEmpty()) {
-        displayWarning("No payments found for this rental agreement.");
-    } else {
-        displayPayments(payments);
+        String rentalAgreementId = promptForInput("Enter Rental Agreement ID");
+        List<Payment> payments = rentalManager.getPaymentsForRentalAgreement(rentalAgreementId);
+        
+        if (payments == null || payments.isEmpty()) {
+            displayWarning("No payments found for this rental agreement.");
+        } else {
+            displayPayments(payments);
+        }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
     }
-
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
 
     private void viewAllPayments() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    ALL PAYMENTS                        " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    ALL PAYMENTS                        " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    List<Payment> payments = rentalManager.getAllPayments();
-    if (payments.isEmpty()) {
-        displayWarning("No payments found.");
-    } else {
-        displayPayments(payments);
+        List<Payment> payments = rentalManager.getAllPayments();
+        if (payments.isEmpty()) {
+            displayWarning("No payments found.");
+        } else {
+            displayPayments(payments);
+        }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
     }
-
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
 
     private void displayPayments(List<Payment> payments) {
-    String[] headers = {"ID", "Amount", "Date", "Method", "Rental Agreement ID"};
-    List<String[]> data = new ArrayList<>();
-    for (Payment payment : payments) {
-        data.add(new String[]{
-            payment.getId(),
-            String.format("$%.2f", payment.getAmount()),
-            DateUtil.formatDate(payment.getPaymentDate()),
-            payment.getPaymentMethod(),
-            payment.getRentalAgreementId()
-        });
+        String[] headers = {"ID", "Amount", "Date", "Method", "Rental Agreement ID"};
+        List<String[]> data = new ArrayList<>();
+        for (Payment payment : payments) {
+            data.add(new String[]{
+                payment.getId(),
+                String.format("$%.2f", payment.getAmount()),
+                DateUtil.formatDate(payment.getPaymentDate()),
+                payment.getPaymentMethod(),
+                payment.getRentalAgreementId()
+            });
+        }
+        System.out.println(AsciiTableGenerator.generateTable(headers, data));
     }
-    System.out.println(AsciiTableGenerator.generateTable(headers, data));
-}
     
     private void updateProperty() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                   UPDATE PROPERTY                       " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                   UPDATE PROPERTY                       " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
 
-    String id = promptForInput("Enter property ID to update");
-    Property property = propertyManager.getProperty(id);
-    if (property != null) {
-        String address = promptForInput("Enter new address (or press enter to keep current: " + property.getAddress() + ")");
-        if (!address.isEmpty()) property.setAddress(address);
-        
-        String priceString = promptForInput("Enter new price (or press enter to keep current: $" + property.getPrice() + ")");
-        if (!priceString.isEmpty()) {
-            try {
-                double newPrice = Double.parseDouble(priceString);
-                property.setPrice(newPrice);
-            } catch (NumberFormatException e) {
-                displayError("Invalid price. Keeping current value.");
+        String id = promptForInput("Enter property ID to update");
+        Property property = propertyManager.getProperty(id);
+        if (property != null) {
+            String address = promptForInput("Enter new address (or press enter to keep current: " + property.getAddress() + ")");
+            if (!address.isEmpty()) property.setAddress(address);
+            
+            String priceString = promptForInput("Enter new price (or press enter to keep current: $" + property.getPrice() + ")");
+            if (!priceString.isEmpty()) {
+                try {
+                    double newPrice = Double.parseDouble(priceString);
+                    property.setPrice(newPrice);
+                } catch (NumberFormatException e) {
+                    displayError("Invalid price. Keeping current value.");
+                }
             }
-        }
-        
-        String statusInput = promptForInput("Enter new status (AVAILABLE, RENTED, UNDER_MAINTENANCE) (or press enter to keep current: " + property.getStatus() + ")");
-        if (!statusInput.isEmpty()) {
-            try {
-                property.setStatus(Property.Status.valueOf(statusInput.toUpperCase()));
-            } catch (IllegalArgumentException e) {
-                displayError("Invalid status. Keeping current value.");
+            
+            String statusInput = promptForInput("Enter new status (AVAILABLE, RENTED, UNDER_MAINTENANCE) (or press enter to keep current: " + property.getStatus() + ")");
+            if (!statusInput.isEmpty()) {
+                try {
+                    property.setStatus(Property.Status.valueOf(statusInput.toUpperCase()));
+                } catch (IllegalArgumentException e) {
+                    displayError("Invalid status. Keeping current value.");
+                }
             }
+            
+            if (property instanceof ResidentialProperty) {
+                ResidentialProperty rp = (ResidentialProperty) property;
+                String bedroomsString = promptForInput("Enter new number of bedrooms (or press enter to keep current: " + rp.getNumberOfBedrooms() + ")");
+                if (!bedroomsString.isEmpty()) {
+                    try {
+                        int newBedrooms = Integer.parseInt(bedroomsString);
+                        rp.setNumberOfBedrooms(newBedrooms);
+                    } catch (NumberFormatException e) {
+                        displayError("Invalid number of bedrooms. Keeping current value.");
+                    }
+                }
+            } else if (property instanceof CommercialProperty) {
+                CommercialProperty cp = (CommercialProperty) property;
+                String businessType = promptForInput("Enter new business type (or press enter to keep current: " + cp.getBusinessType() + ")");
+                if (!businessType.isEmpty()) cp.setBusinessType(businessType);
+            }
+            
+            if (propertyManager.updateProperty(property)) {
+                displaySuccess("Property updated successfully!");
+            } else {
+                displayError("Failed to update property.");
+            }
+        } else {
+            displayError("Property not found.");
         }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
+    
+    private void deleteProperty() {
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                   DELETE PROPERTY                       " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+
+        String id = promptForInput("Enter property ID to delete");
+        Property property = propertyManager.getProperty(id);
+        if (property != null) {
+            System.out.println("Property details:");
+            displayPropertyDetails(property);
+            String confirm = promptForInput("Are you sure you want to delete this property? (yes/no)");
+            if (confirm.equalsIgnoreCase("yes")) {
+                if (propertyManager.deleteProperty(id)) {
+                    displaySuccess("Property deleted successfully!");
+                } else {
+                    displayError("Failed to delete property. Property may not exist.");
+                }
+            } else {
+                System.out.println("Deletion cancelled.");
+            }
+        } else {
+            displayError("Property not found.");
+        }
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
+    }
+    
+    private void viewProperty() {
+        String id = reader.readLine("Enter property ID to view: ");
+        Property property = propertyManager.getProperty(id);
+        if (property != null) {
+            displayPropertyDetails(property);
+        } else {
+            displayError("Property not found.");
+        }
+    }
+
+    private void displayPropertyDetails(Property property) {
+        String border = "╔══════════════════════════════════════════════════════════════╗";
+        String separator = "╠══════════════════════════════════════════════════════════════╣";
+        String footer = "╚══════════════════════════════════════════════════════════════╝";
+
+        System.out.println(ANSI_BLUE + border + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    PROPERTY DETAILS                      " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + separator + ANSI_RESET);
+        
+        printDetailRow("Property ID", property.getId());
+        printDetailRow("Address", property.getAddress());
+        printDetailRow("Price", String.format("$%.2f", property.getPrice()));
+        printDetailRow("Status", property.getStatus().toString());
+        printDetailRow("Owner", property.getOwner());
+        printDetailRow("Type", property instanceof ResidentialProperty ? "Residential" : "Commercial");
         
         if (property instanceof ResidentialProperty) {
             ResidentialProperty rp = (ResidentialProperty) property;
-            String bedroomsString = promptForInput("Enter new number of bedrooms (or press enter to keep current: " + rp.getNumberOfBedrooms() + ")");
-            if (!bedroomsString.isEmpty()) {
-                try {
-                    int newBedrooms = Integer.parseInt(bedroomsString);
-                    rp.setNumberOfBedrooms(newBedrooms);
-                } catch (NumberFormatException e) {
-                    displayError("Invalid number of bedrooms. Keeping current value.");
-                }
-            }
+            printDetailRow("Bedrooms", String.valueOf(rp.getNumberOfBedrooms()));
+            printDetailRow("Has Garden", rp.isHasGarden() ? "Yes" : "No");
+            printDetailRow("Pet Friendly", rp.isPetFriendly() ? "Yes" : "No");
         } else if (property instanceof CommercialProperty) {
             CommercialProperty cp = (CommercialProperty) property;
-            String businessType = promptForInput("Enter new business type (or press enter to keep current: " + cp.getBusinessType() + ")");
-            if (!businessType.isEmpty()) cp.setBusinessType(businessType);
+            printDetailRow("Business Type", cp.getBusinessType());
+            printDetailRow("Parking Spaces", String.valueOf(cp.getParkingSpaces()));
+            printDetailRow("Square Footage", String.format("%.2f", cp.getSquareFootage()));
         }
+
+        System.out.println(ANSI_BLUE + footer + ANSI_RESET);
+    }
+
+    private void addProperty() {
+        System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     ADD PROPERTY                         " + ANSI_BLUE + "║" + ANSI_RESET);
+        System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
+
+        String id = promptForInput("Property ID");
+        String address = promptForInput("Address");
+        double price = Double.parseDouble(promptForInput("Price"));
+        String statusInput = promptForInput("Status (AVAILABLE, RENTED, UNDER_MAINTENANCE)");
+        Property.Status status = Property.Status.valueOf(statusInput.toUpperCase());
+        String owner = promptForInput("Owner ID");
         
-        if (propertyManager.updateProperty(property)) {
-            displaySuccess("Property updated successfully!");
-        } else {
-            displayError("Failed to update property.");
-        }
-    } else {
-        displayError("Property not found.");
-    }
-
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
-    
-    private void deleteProperty() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                   DELETE PROPERTY                       " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
-
-    String id = promptForInput("Enter property ID to delete");
-    Property property = propertyManager.getProperty(id);
-    if (property != null) {
-        System.out.println("Property details:");
-        displayPropertyDetails(property);
-        String confirm = promptForInput("Are you sure you want to delete this property? (yes/no)");
-        if (confirm.equalsIgnoreCase("yes")) {
-            if (propertyManager.deleteProperty(id)) {
-                displaySuccess("Property deleted successfully!");
+        String propertyType = promptForInput("Property Type (RESIDENTIAL or COMMERCIAL)");
+        Property newProperty;
+        
+        try {
+            if (propertyType.equalsIgnoreCase("RESIDENTIAL")) {
+                int bedrooms = Integer.parseInt(promptForInput("Number of Bedrooms"));
+                boolean hasGarden = promptForInput("Has Garden? (yes/no)").equalsIgnoreCase("yes");
+                boolean isPetFriendly = promptForInput("Is Pet Friendly? (yes/no)").equalsIgnoreCase("yes");
+                newProperty = new ResidentialProperty(id, address, price, status, owner, bedrooms, hasGarden, isPetFriendly);
+            } else if (propertyType.equalsIgnoreCase("COMMERCIAL")) {
+                String businessType = promptForInput("Business Type");
+                int parkingSpaces = Integer.parseInt(promptForInput("Number of Parking Spaces"));
+                double squareFootage = Double.parseDouble(promptForInput("Square Footage"));
+                newProperty = new CommercialProperty(id, address, price, status, owner, businessType, parkingSpaces, squareFootage);
             } else {
-                displayError("Failed to delete property. Property may not exist.");
+                throw new IllegalArgumentException("Invalid property type. Must be RESIDENTIAL or COMMERCIAL.");
             }
-        } else {
-            System.out.println("Deletion cancelled.");
+            
+            if (propertyManager.addProperty(newProperty)) {
+                displaySuccess("Property added successfully!");
+            } else {
+                displayError("Failed to add property. Property ID may already exist.");
+            }
+        } catch (IllegalArgumentException e) {
+            displayError("Invalid input: " + e.getMessage());
         }
-    } else {
-        displayError("Property not found.");
+
+        System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
     }
-
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
-    
-    private void viewProperty() {
-    String id = reader.readLine("Enter property ID to view: ");
-    Property property = propertyManager.getProperty(id);
-    if (property != null) {
-        displayPropertyDetails(property);
-    } else {
-        displayError("Property not found.");
-    }
-}
-
-private void displayPropertyDetails(Property property) {
-    String border = "╔══════════════════════════════════════════════════════════════╗";
-    String separator = "╠══════════════════════════════════════════════════════════════╣";
-    String footer = "╚══════════════════════════════════════════════════════════════╝";
-
-    System.out.println(ANSI_BLUE + border + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                    PROPERTY DETAILS                      " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + separator + ANSI_RESET);
-    
-    printDetailRow("Property ID", property.getId());
-    printDetailRow("Address", property.getAddress());
-    printDetailRow("Price", String.format("$%.2f", property.getPrice()));
-    printDetailRow("Status", property.getStatus().toString());
-    printDetailRow("Owner", property.getOwner());
-    printDetailRow("Type", property instanceof ResidentialProperty ? "Residential" : "Commercial");
-    
-    if (property instanceof ResidentialProperty) {
-        ResidentialProperty rp = (ResidentialProperty) property;
-        printDetailRow("Bedrooms", String.valueOf(rp.getNumberOfBedrooms()));
-        printDetailRow("Has Garden", rp.isHasGarden() ? "Yes" : "No");
-        printDetailRow("Pet Friendly", rp.isPetFriendly() ? "Yes" : "No");
-    } else if (property instanceof CommercialProperty) {
-        CommercialProperty cp = (CommercialProperty) property;
-        printDetailRow("Business Type", cp.getBusinessType());
-        printDetailRow("Parking Spaces", String.valueOf(cp.getParkingSpaces()));
-        printDetailRow("Square Footage", String.format("%.2f", cp.getSquareFootage()));
-    }
-
-    System.out.println(ANSI_BLUE + footer + ANSI_RESET);
-}
-
-private void addProperty() {
-    System.out.println(ANSI_BLUE + "╔══════════════════════════════════════════════════════════════╗" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "║" + ANSI_YELLOW + "                     ADD PROPERTY                         " + ANSI_BLUE + "║" + ANSI_RESET);
-    System.out.println(ANSI_BLUE + "╠══════════════════════════════════════════════════════════════╣" + ANSI_RESET);
-
-    String id = promptForInput("Property ID");
-    String address = promptForInput("Address");
-    double price = Double.parseDouble(promptForInput("Price"));
-    String statusInput = promptForInput("Status (AVAILABLE, RENTED, UNDER_MAINTENANCE)");
-    Property.Status status = Property.Status.valueOf(statusInput.toUpperCase());
-    String owner = promptForInput("Owner ID");
-    
-    String propertyType = promptForInput("Property Type (RESIDENTIAL or COMMERCIAL)");
-    Property newProperty;
-    
-    if (propertyType.equalsIgnoreCase("RESIDENTIAL")) {
-        int bedrooms = Integer.parseInt(promptForInput("Number of Bedrooms"));
-        boolean hasGarden = promptForInput("Has Garden? (yes/no)").equalsIgnoreCase("yes");
-        boolean isPetFriendly = promptForInput("Is Pet Friendly? (yes/no)").equalsIgnoreCase("yes");
-        newProperty = new ResidentialProperty(id, address, price, status, owner, bedrooms, hasGarden, isPetFriendly);
-    } else {
-        String businessType = promptForInput("Business Type");
-        int parkingSpaces = Integer.parseInt(promptForInput("Number of Parking Spaces"));
-        double squareFootage = Double.parseDouble(promptForInput("Square Footage"));
-        newProperty = new CommercialProperty(id, address, price, status, owner, businessType, parkingSpaces, squareFootage);
-    }
-    
-    if (propertyManager.addProperty(newProperty)) {
-        displaySuccess("Property added successfully!");
-    } else {
-        displayError("Failed to add property. Property ID may already exist.");
-    }
-
-    System.out.println(ANSI_BLUE + "╚══════════════════════════════════════════════════════════════╝" + ANSI_RESET);
-}
 
     private void manageTenants() {
-    boolean managing = true;
-    while (managing) {
-        System.out.println(ANSI_YELLOW + "\n=== Manage Tenants ===" + ANSI_RESET);
-        System.out.println(ANSI_BLUE + "1. " + ANSI_RESET + "Add Tenant");
-        System.out.println(ANSI_BLUE + "2. " + ANSI_RESET + "Update Tenant");
-        System.out.println(ANSI_BLUE + "3. " + ANSI_RESET + "Delete Tenant");
-        System.out.println(ANSI_BLUE + "4. " + ANSI_RESET + "View Tenant");
-        System.out.println(ANSI_BLUE + "5. " + ANSI_RESET + "View All Tenants");
-        System.out.println(ANSI_BLUE + "6. " + ANSI_RESET + "Return to Main Menu");
+        boolean managing = true;
+        while (managing) {
+            System.out.println(ANSI_YELLOW + "\n=== Manage Tenants ===" + ANSI_RESET);
+            System.out.println(ANSI_BLUE + "1. " + ANSI_RESET + "Add Tenant");
+            System.out.println(ANSI_BLUE + "2. " + ANSI_RESET + "Update Tenant");
+            System.out.println(ANSI_BLUE + "3. " + ANSI_RESET + "Delete Tenant");
+            System.out.println(ANSI_BLUE + "4. " + ANSI_RESET + "View Tenant");
+            System.out.println(ANSI_BLUE + "5. " + ANSI_RESET + "View All Tenants");
+            System.out.println(ANSI_BLUE + "6. " + ANSI_RESET + "Return to Main Menu");
 
-        String choice = reader.readLine("Enter your choice: ");
-        switch (choice) {
-            case "1":
-                addTenant();
-                break;
-            case "2":
-                updateTenant();
-                break;
-            case "3":
-                deleteTenant();
-                break;
-            case "4":
-                viewTenant();
-                break;
-            case "5":
-                viewAllTenants();
-                break;
-            case "6":
-                managing = false;
-                break;
-            default:
-                displayError("Invalid choice. Please try again.");
+            String choice = reader.readLine("Enter your choice: ");
+            switch (choice) {
+                case "1":
+                    addTenant();
+                    break;
+                case "2":
+                    updateTenant();
+                    break;
+                case "3":
+                    deleteTenant();
+                    break;
+                case "4":
+                    viewTenant();
+                    break;
+                case "5":
+                    viewAllTenants();
+                    break;
+                case "6":
+                    managing = false;
+                    break;
+                default:
+                    displayError("Invalid choice. Please try again.");
+            }
         }
     }
-}
 
-private void manageHosts() {
-    boolean managing = true;
-    while (managing) {
-        System.out.println(ANSI_YELLOW + "\n=== Manage Hosts ===" + ANSI_RESET);
-        System.out.println(ANSI_BLUE + "1. " + ANSI_RESET + "Add Host");
-        System.out.println(ANSI_BLUE + "2. " + ANSI_RESET + "Update Host");
-        System.out.println(ANSI_BLUE + "3. " + ANSI_RESET + "Delete Host");
-        System.out.println(ANSI_BLUE + "4. " + ANSI_RESET + "View Host");
-        System.out.println(ANSI_BLUE + "5. " + ANSI_RESET + "View All Hosts");
-        System.out.println(ANSI_BLUE + "6. " + ANSI_RESET + "Return to Main Menu");
+    private void manageHosts() {
+        boolean managing = true;
+        while (managing) {
+            System.out.println(ANSI_YELLOW + "\n=== Manage Hosts ===" + ANSI_RESET);
+            System.out.println(ANSI_BLUE + "1. " + ANSI_RESET + "Add Host");
+            System.out.println(ANSI_BLUE + "2. " + ANSI_RESET + "Update Host");
+            System.out.println(ANSI_BLUE + "3. " + ANSI_RESET + "Delete Host");
+            System.out.println(ANSI_BLUE + "4. " + ANSI_RESET + "View Host");
+            System.out.println(ANSI_BLUE + "5. " + ANSI_RESET + "View All Hosts");
+            System.out.println(ANSI_BLUE + "6. " + ANSI_RESET + "Return to Main Menu");
 
-        String choice = reader.readLine("Enter your choice: ");
-        switch (choice) {
-            case "1":
-                addHost();
-                break;
-            case "2":
-                updateHost();
-                break;
-            case "3":
-                deleteHost();
-                break;
-            case "4":
-                viewHost();
-                break;
-            case "5":
-                viewAllHosts();
-                break;
-            case "6":
-                managing = false;
-                break;
-            default:
-                displayError("Invalid choice. Please try again.");
+            String choice = reader.readLine("Enter your choice: ");
+            switch (choice) {
+                case "1":
+                    addHost();
+                    break;
+                case "2":
+                    updateHost();
+                    break;
+                case "3":
+                    deleteHost();
+                    break;
+                case "4":
+                    viewHost();
+                    break;
+                case "5":
+                    viewAllHosts();
+                    break;
+                case "6":
+                    managing = false;
+                    break;
+                default:
+                    displayError("Invalid choice. Please try again.");
+            }
         }
     }
-}
 
-private void manageProperties() {
-    boolean managing = true;
-    while (managing) {
-        System.out.println(ANSI_YELLOW + "\n=== Manage Properties ===" + ANSI_RESET);
-        System.out.println(ANSI_BLUE + "1. " + ANSI_RESET + "Add Property");
-        System.out.println(ANSI_BLUE + "2. " + ANSI_RESET + "Update Property");
-        System.out.println(ANSI_BLUE + "3. " + ANSI_RESET + "Delete Property");
-        System.out.println(ANSI_BLUE + "4. " + ANSI_RESET + "View Property");
-        System.out.println(ANSI_BLUE + "5. " + ANSI_RESET + "View All Properties");
-        System.out.println(ANSI_BLUE + "6. " + ANSI_RESET + "Return to Main Menu");
+    private void manageProperties() {
+        boolean managing = true;
+        while (managing) {
+            System.out.println(ANSI_YELLOW + "\n=== Manage Properties ===" + ANSI_RESET);
+            System.out.println(ANSI_BLUE + "1. " + ANSI_RESET + "Add Property");
+            System.out.println(ANSI_BLUE + "2. " + ANSI_RESET + "Update Property");
+            System.out.println(ANSI_BLUE + "3. " + ANSI_RESET + "Delete Property");
+            System.out.println(ANSI_BLUE + "4. " + ANSI_RESET + "View Property");
+            System.out.println(ANSI_BLUE + "5. " + ANSI_RESET + "View All Properties");
+            System.out.println(ANSI_BLUE + "6. " + ANSI_RESET + "Return to Main Menu");
 
-        String choice = reader.readLine("Enter your choice: ");
-        switch (choice) {
-            case "1":
-                addProperty();
-                break;
-            case "2":
-                updateProperty();
-                break;
-            case "3":
-                deleteProperty();
-                break;
-            case "4":
-                viewProperty();
-                break;
-            case "5":
-                viewAllProperties();
-                break;
-            case "6":
-                managing = false;
-                break;
-            default:
-                displayError("Invalid choice. Please try again.");
+            String choice = reader.readLine("Enter your choice: ");
+            switch (choice) {
+                case "1":
+                    addProperty();
+                    break;
+                case "2":
+                    updateProperty();
+                    break;
+                case "3":
+                    deleteProperty();
+                    break;
+                case "4":
+                    viewProperty();
+                    break;
+                case "5":
+                    viewAllProperties();
+                    break;
+                case "6":
+                    managing = false;
+                    break;
+                default:
+                    displayError("Invalid choice. Please try again.");
+            }
         }
     }
-}
     
     private void viewAllProperties() {
         System.out.println("\n--- All Properties ---");
@@ -1190,3 +1214,7 @@ private void viewAllHosts() {
         }
     }
 }
+
+
+
+
