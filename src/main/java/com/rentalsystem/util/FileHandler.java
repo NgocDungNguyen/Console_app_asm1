@@ -21,58 +21,58 @@ public class FileHandler {
     private List<Payment> payments = new ArrayList<>();
 
     public Map<String, List<?>> loadAllData() {
-       System.out.println("Starting to load all data...");
-       Map<String, List<?>> loadedData = new HashMap<>();
+        System.out.println("Starting to load all data...");
+        Map<String, List<?>> loadedData = new HashMap<>();
        
-       List<Tenant> tenants = loadTenants();
-       loadedData.put("tenants", tenants);
+        List<Tenant> tenants = loadTenants();
+        loadedData.put("tenants", tenants);
        
-       List<Host> hosts = loadHosts();
-       loadedData.put("hosts", hosts);
+        List<Host> hosts = loadHosts();
+        loadedData.put("hosts", hosts);
        
-       List<Property> properties = loadProperties();
-       loadedData.put("properties", properties);
+        List<Property> properties = loadProperties();
+        loadedData.put("properties", properties);
        
-       List<RentalAgreement> agreements = loadRentalAgreements();
-       loadedData.put("rentalAgreements", agreements);
+        List<RentalAgreement> agreements = loadRentalAgreements();
+        loadedData.put("rentalAgreements", agreements);
        
-       List<Payment> payments = loadPayments();
-       loadedData.put("payments", payments);
+        List<Payment> payments = loadPayments();
+        loadedData.put("payments", payments);
        
-       // Print loaded data summary
-       System.out.println("Loaded data summary:");
-       System.out.println("Tenants: " + tenants.size());
-       System.out.println("Hosts: " + hosts.size());
-       System.out.println("Properties: " + properties.size());
-       System.out.println("Rental Agreements: " + agreements.size());
-       System.out.println("Payments: " + payments.size());
+        // Print loaded data summary
+        System.out.println("Loaded data summary:");
+        System.out.println("Tenants: " + tenants.size());
+        System.out.println("Hosts: " + hosts.size());
+        System.out.println("Properties: " + properties.size());
+        System.out.println("Rental Agreements: " + agreements.size());
+        System.out.println("Payments: " + payments.size());
        
-       return loadedData;
-   }
+        return loadedData;
+    }
 
     public List<Tenant> loadTenants() {
-       tenantMap.clear();
-       System.out.println("Loading tenants...");
-       try (BufferedReader reader = new BufferedReader(new FileReader(TENANTS_FILE))) {
-           String line;
-           while ((line = reader.readLine()) != null) {
-               System.out.println("Processing tenant line: " + line);
-               String[] parts = line.split(",");
-               if (parts.length == 5) {  // Changed from 4 to 5
-                   Tenant tenant = new Tenant(parts[0], parts[1], DateUtil.parseDate(parts[2]), parts[3] + "," + parts[4]);
-                   tenantMap.put(tenant.getId(), tenant);
-                   System.out.println("Added tenant: " + tenant.getId());
-               } else {
-                   System.out.println("Invalid tenant data format: " + line);
-               }
-           }
-       } catch (IOException e) {
-           System.err.println("Error reading tenants file: " + e.getMessage());
-           e.printStackTrace();
-       }
-       System.out.println("Loaded " + tenantMap.size() + " tenants.");
-       return new ArrayList<>(tenantMap.values());
-   }
+        tenantMap.clear();
+        System.out.println("Loading tenants...");
+        try (BufferedReader reader = new BufferedReader(new FileReader(TENANTS_FILE))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println("Processing tenant line: " + line);
+                String[] parts = line.split(",");
+                if (parts.length == 5) {
+                    Tenant tenant = new Tenant(parts[0], parts[1], DateUtil.parseDate(parts[2]), parts[3] + "," + parts[4]);
+                    tenantMap.put(tenant.getId(), tenant);
+                    System.out.println("Added tenant: " + tenant.getId());
+                } else {
+                    System.out.println("Invalid tenant data format: " + line);
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading tenants file: " + e.getMessage());
+            e.printStackTrace();
+        }
+        System.out.println("Loaded " + tenantMap.size() + " tenants.");
+        return new ArrayList<>(tenantMap.values());
+    }
 
     public List<Host> loadHosts() {
         hostMap.clear();
@@ -159,20 +159,6 @@ public class FileHandler {
 
         System.out.println("Loaded " + rentalAgreements.size() + " rental agreements.");
 
-        // Associate payments with rental agreements
-        for (Payment payment : payments) {
-            RentalAgreement agreement = rentalAgreements.stream()
-                .filter(a -> a.getId().equals(payment.getRentalAgreementId()))
-                .findFirst()
-                .orElse(null);
-            if (agreement != null) {
-                agreement.addPayment(payment);
-                System.out.println("Associated payment " + payment.getId() + " with agreement " + agreement.getId());
-            } else {
-                System.out.println("Could not find rental agreement for payment: " + payment.getId());
-            }
-        }
-
         return new ArrayList<>(rentalAgreements);
     }
 
@@ -196,7 +182,7 @@ public class FileHandler {
         } catch (IOException e) {
             System.err.println("Error reading payments file: " + e.getMessage());
         }
-        return payments;
+        return new ArrayList<>(payments);
     }
 
     public void savePayments(List<Payment> payments) {
